@@ -6,29 +6,17 @@ Tired of `create-react-app` burying your Webpack configuration? React Forge give
 
 ## Features
 
-- **Build Tools**: Choose between lighting-fast **Vite** or raw, fully exposed **Webpack**.
+- **Build Tools**: Choose between lightning-fast **Vite** or raw, fully exposed **Webpack**.
 - **Languages**: JavaScript or TypeScript.
 - **State Management**: Optional injection of **Redux Toolkit** or **Zustand**.
 - **Styling**: Built-in **SCSS** support out of the box, with an option to auto-inject **Tailwind CSS**.
 
-## Installation (Local Testing)
-
-1. Clone or download this repository.
-2. Install the CLI dependencies:
-   ```bash
-   npm install
-   ```
-3. Link the package globally so you can use the command anywhere:
-   ```bash
-   npm link
-   ```
-
 ## Usage
 
-Run the generator in any directory:
+The easiest way to use React Forge is via `npx`, which ensures you are always using the latest version. Run the following command in your terminal where you want to create your new project:
 
 ```bash
-react-forge
+npx react-forge
 ```
 
 You will be presented with interactive prompts:
@@ -39,7 +27,7 @@ You will be presented with interactive prompts:
 4. **State Management**: None, Redux, or Zustand.
 5. **Styling**: None (SCSS is default) or Tailwind CSS.
 
-Once the generator finishes:
+Once the generator finishes, navigate into your new project and start coding:
 
 ```bash
 cd your-project-name
@@ -47,10 +35,20 @@ npm install
 npm run dev
 ```
 
-## Publishing to NPM
+## Global Installation (Optional)
 
-When you are ready to publish this tool so others can use it via `npx`:
+If you prefer to install the CLI globally on your machine, you can do so via npm:
 
-1. Ensure you are logged into NPM: `npm login`
-2. Run `npm publish` from the root of this project.
-3. Others can now run: `npx react-forge-cli` (or whatever name you publish it under).
+```bash
+npm install -g react-forge
+```
+
+Then you can run the generator anywhere using:
+
+```bash
+react-forge
+```
+
+## License
+
+MIT
