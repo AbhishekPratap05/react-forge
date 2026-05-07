@@ -16,7 +16,7 @@ Tired of `create-react-app` burying your Webpack configuration? React Forge give
 The easiest way to use React Forge is via `npx`, which ensures you are always using the latest version. Run the following command in your terminal where you want to create your new project:
 
 ```bash
-npx react-forge
+npx react-forge-builder
 ```
 
 You will be presented with interactive prompts:
@@ -40,13 +40,13 @@ npm run dev
 If you prefer to install the CLI globally on your machine, you can do so via npm:
 
 ```bash
-npm install -g react-forge
+npm install -g react-forge-builder
 ```
 
 Then you can run the generator anywhere using:
 
 ```bash
-react-forge
+react-forge-builder
 ```
 
 ## License
