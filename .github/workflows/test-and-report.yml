@@ -48,8 +48,26 @@ jobs:
           fi
         shell: bash
 
+      - name: Debug Workspace Files
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Workspace files:"
+          ls -la
+          echo "Checking test-results.json:"
+          if [ -f "test-results.json" ]; then
+            echo "test-results.json exists! Content:"
+            cat test-results.json
+          else
+            echo "test-results.json does NOT exist!"
+          fi
+        shell: bash
+
       - name: Generate HTML Report and Dashboard
-        run: node scripts/generate-dashboard.js --run-number=${{ github.run_number }} --commit-sha=${{ github.sha }}
+        run: |
+          node scripts/generate-dashboard.js --run-number=${{ github.run_number }} --commit-sha=${{ github.sha }} || {
+            echo "Dashboard generation script failed! Printing error above."
+            exit 1
+          }
 
       - name: Deploy Reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
