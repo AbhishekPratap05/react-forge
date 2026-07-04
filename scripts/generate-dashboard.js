@@ -49,9 +49,10 @@ async function main() {
   const passedTests = results.numPassedTests || 0;
   const failedTests = results.numFailedTests || 0;
   const status = failedTests > 0 || totalTests === 0 ? 'failed' : 'passed';
-  const duration = results.testResults.reduce((acc, file) => {
-    return acc + (file.endTime - file.startTime);
-  }, 0);
+  const duration = results.testResults ? results.testResults.reduce((acc, file) => {
+    const fileDuration = (file.endTime && file.startTime) ? (file.endTime - file.startTime) : 0;
+    return acc + fileDuration;
+  }, 0) : 0;
 
   const timestamp = now.toISOString();
   const dateFormatted = now.toLocaleDateString('en-US', {
@@ -154,48 +155,67 @@ function generateInDepthReportHtml(
   const statusText = status.toUpperCase();
 
   // Parse test files into details
-  const suiteCards = results.testResults.map((file, fileIdx) => {
+  const suiteCards = results.testResults ? results.testResults.map((file, fileIdx) => {
     const fileBasename = path.basename(file.name);
     const fileStatus = file.status === 'passed' ? 'passed' : 'failed';
-    const filePassed = file.assertionResults.filter(r => r.status === 'passed').length;
-    const fileTotal = file.assertionResults.length;
+    const assertions = file.assertionResults || [];
+    const filePassed = assertions.filter(r => r.status === 'passed').length;
+    const fileTotal = assertions.length;
     const fileFailed = fileTotal - filePassed;
     const fileStatusColor = fileStatus === 'passed' ? 'var(--color-pass)' : 'var(--color-fail)';
     const fileIcon = fileStatus === 'passed' ? 'check-circle' : 'x-circle';
 
-    const testRows = file.assertionResults.map((test, testIdx) => {
-      const testPassed = test.status === 'passed';
-      const rowStatusColor = testPassed ? 'var(--color-pass)' : 'var(--color-fail)';
-      const rowIcon = testPassed ? 'check' : 'x';
-      const durationFormatted = `${test.duration || 0}ms`;
+    let testRows = '';
+    if (assertions.length > 0) {
+      testRows = assertions.map((test, testIdx) => {
+        const testPassed = test.status === 'passed';
+        const rowStatusColor = testPassed ? 'var(--color-pass)' : 'var(--color-fail)';
+        const rowIcon = testPassed ? 'check' : 'x';
+        const durationFormatted = `${test.duration || 0}ms`;
 
-      let errorBlock = '';
-      if (!testPassed && test.failureMessages && test.failureMessages.length > 0) {
-        // Clean ANSI colors from failure messages
-        const cleanMsg = test.failureMessages.join('\n').replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-        errorBlock = `
-          <div class="error-details">
-            <pre><code>${escapeHtml(cleanMsg)}</code></pre>
+        let errorBlock = '';
+        if (!testPassed && test.failureMessages && test.failureMessages.length > 0) {
+          // Clean ANSI colors from failure messages
+          const cleanMsg = test.failureMessages.join('\n').replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+          errorBlock = `
+            <div class="error-details">
+              <pre><code>${escapeHtml(cleanMsg)}</code></pre>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="test-row ${test.status}">
+            <div class="test-row-header" onclick="toggleError(${fileIdx}, ${testIdx})">
+              <div class="test-title">
+                <i data-lucide="${rowIcon}" style="color: ${rowStatusColor}"></i>
+                <span>${escapeHtml(test.fullName)}</span>
+              </div>
+              <div class="test-meta">
+                <span class="test-duration">${durationFormatted}</span>
+                ${!testPassed ? `<i data-lucide="chevron-down" class="chevron-icon"></i>` : ''}
+              </div>
+            </div>
+            ${errorBlock}
           </div>
         `;
-      }
-
-      return `
-        <div class="test-row ${test.status}">
-          <div class="test-row-header" onclick="toggleError(${fileIdx}, ${testIdx})">
-            <div class="test-title">
-              <i data-lucide="${rowIcon}" style="color: ${rowStatusColor}"></i>
-              <span>${escapeHtml(test.fullName)}</span>
-            </div>
-            <div class="test-meta">
-              <span class="test-duration">${durationFormatted}</span>
-              ${!testPassed ? `<i data-lucide="chevron-down" class="chevron-icon"></i>` : ''}
-            </div>
-          </div>
-          ${errorBlock}
+      }).join('');
+    } else if (file.message) {
+      // Compilation / syntax error in the suite itself
+      const cleanMsg = file.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+      testRows = `
+        <div class="error-details" style="display: block; border-top: none;">
+          <p style="color: var(--color-fail); font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">Suite compilation / loading failed:</p>
+          <pre><code>${escapeHtml(cleanMsg)}</code></pre>
         </div>
       `;
-    }).join('');
+    } else {
+      testRows = `
+        <div class="error-details" style="display: block; border-top: none; color: var(--text-secondary);">
+          No tests run in this suite.
+        </div>
+      `;
+    }
 
     return `
       <div class="suite-card ${fileStatus}">
@@ -214,7 +234,7 @@ function generateInDepthReportHtml(
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') : '';
 
   return `
 <!DOCTYPE html>
