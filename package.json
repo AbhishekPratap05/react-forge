@@ -1,6 +1,6 @@
 {
   "name": "react-forge-builder",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A modern, highly customizable boilerplate generator for React that does not hide its configuration.",
   "main": "lib/index.js",
   "type": "module",
@@ -17,7 +17,8 @@
   "homepage": "https://github.com/AbhishekPratap05/react-forge#readme",
   "scripts": {
     "start": "node bin/cli.js",
-    "test": "vitest run --reporter=json --outputFile=test-results.json"
+    "test": "vitest run --reporter=json --outputFile=test-results.json",
+    "postinstall": "node scripts/postinstall.js"
   },
   "keywords": [
     "react",
@@ -34,6 +35,7 @@
     "bin",
     "lib",
     "templates",
+    "scripts/postinstall.js",
     "README.md"
   ],
   "dependencies": {
