@@ -1,0 +1,65 @@
+name: Test and Publish Reports
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        id: run-tests
+        run: npm test
+        continue-on-error: true
+
+      - name: Checkout gh-pages Branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-temp
+        continue-on-error: true
+
+      - name: Prepare Report Directory & Copy History
+        run: |
+          mkdir -p reports
+          if [ -d "gh-pages-temp" ]; then
+            cp -r gh-pages-temp/* reports/ || true
+          fi
+        shell: bash
+
+      - name: Generate HTML Report and Dashboard
+        run: node scripts/generate-dashboard.js --run-number=${{ github.run_number }} --commit-sha=${{ github.sha }}
+
+      - name: Deploy Reports to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./reports
+          publish_branch: gh-pages
+
+      - name: Enforce Test Failure Status
+        if: steps.run-tests.outcome == 'failure'
+        run: |
+          echo "Test suite failed during execution. Marking build as failed."
+          exit 1
