@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Forge CLI - Test History Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --color-pass: #10b981;
+      --color-pass-glow: rgba(16, 185, 129, 0.12);
+      --color-fail: #f43f5e;
+      --color-fail-glow: rgba(244, 63, 94, 0.12);
+      --color-accent: #6366f1;
+      --color-accent-glow: rgba(99, 102, 241, 0.2);
+      --font-family: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+    }
+
+    .stat-card.accent::after {
+      background: var(--color-accent);
+    }
+
+    .stat-card.pass::after {
+      background: var(--color-pass);
+    }
+
+    .stat-card.fail::after {
+      background: var(--color-fail);
+    }
+
+    .stat-card .label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      margin-top: auto;
+    }
+
+    /* Filters and Controls */
+    .controls-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 350px;
+      min-width: 250px;
+    }
+
+    .search-container i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
+      width: 18px;
+      height: 18px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 0.75rem 1rem 0.75rem 2.75rem;
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-glow);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-card);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.5rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .filter-btn:hover:not(.active) {
+      color: var(--text-primary);
+    }
+
+    /* History Table */
+    .table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 1.25rem 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-card);
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .clickable-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .clickable-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .build-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+    }
+
+    .build-name-cell i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .status-badge-inline {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge-inline.passed {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-pass);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge-inline.failed {
+      background: rgba(244, 63, 94, 0.1);
+      color: var(--color-fail);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .timestamp-cell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .timestamp-cell .date {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .timestamp-cell .time {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .results-cell {
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    .results-cell .passed-count {
+      color: var(--color-pass);
+      font-weight: 600;
+    }
+
+    .results-cell .total-count {
+      color: var(--text-secondary);
+    }
+
+    .duration {
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+
+    .commit-hash {
+      font-family: monospace;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .view-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--color-accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .clickable-row:hover .view-btn {
+      color: #818cf8;
+      transform: translateX(2px);
+    }
+
+    .view-btn i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+      stroke-width: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div>
+          <h1 class="brand-title">
+            <i data-lucide="shield-check" style="color: var(--color-accent); width: 32px; height: 32px;"></i>
+            React Forge CLI
+          </h1>
+          <p class="brand-subtitle">Historical test reports & build stability logs</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card accent">
+        <span class="label">Total Runs</span>
+        <span class="value">1</span>
+      </div>
+      <div class="stat-card pass">
+        <span class="label">Success Rate</span>
+        <span class="value">100%</span>
+      </div>
+      <div class="stat-card fail">
+        <span class="label">Latest Status</span>
+        <span class="value" style="color: var(--color-pass); text-shadow: 0 0 10px var(--color-pass-glow)">
+          PASSED
+        </span>
+      </div>
+    </div>
+
+    <div class="controls-panel">
+      <div class="search-container">
+        <i data-lucide="search"></i>
+        <input type="text" id="search" class="search-input" placeholder="Search by build number or commit..." oninput="filterRows()">
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" onclick="setFilter('all')">All Runs</button>
+        <button class="filter-btn" onclick="setFilter('passed')">Passed</button>
+        <button class="filter-btn" onclick="setFilter('failed')">Failed</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      
+            <table>
+              <thead>
+                <tr>
+                  <th>Build Name</th>
+                  <th>Status</th>
+                  <th>Timestamp</th>
+                  <th>Tests Passed</th>
+                  <th>Duration</th>
+                  <th>Commit</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="runs-tbody">
+                
+      <tr class="clickable-row" onclick="window.location.href='report-4.html'" data-status="passed" data-build="4" data-commit="fa115f1788a3edec1e357b362faa6140a9004a94">
+        <td>
+          <div class="build-name-cell">
+            <i data-lucide="check-circle-2" style="color: var(--color-pass)"></i>
+            <span>Build #4</span>
+          </div>
+        </td>
+        <td>
+          <span class="status-badge-inline passed">PASSED</span>
+        </td>
+        <td>
+          <div class="timestamp-cell">
+            <span class="date">Jul 4, 2026</span>
+            <span class="time">02:11:35 AM</span>
+          </div>
+        </td>
+        <td class="results-cell">
+          <span class="passed-count">6</span> / <span class="total-count">6</span>
+        </td>
+        <td>
+          <span class="duration">0.06s</span>
+        </td>
+        <td>
+          <span class="commit-hash">fa115f1</span>
+        </td>
+        <td style="text-align: right;">
+          <a href="report-4.html" class="view-btn">
+            View Details
+            <i data-lucide="chevron-right"></i>
+          </a>
+        </td>
+      </tr>
+    
+              </tbody>
+            </table>
+            
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let currentFilter = 'all';
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.innerText.toLowerCase().includes(filter)) {
+          btn.classList.add('active');
+        }
+      });
+      filterRows();
+    }
+
+    function filterRows() {
+      const query = document.getElementById('search').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.clickable-row');
+
+      rows.forEach(row => {
+        const build = row.getAttribute('data-build').toLowerCase();
+        const commit = row.getAttribute('data-commit').toLowerCase();
+        const status = row.getAttribute('data-status');
+
+        const matchesQuery = build.includes(query) || commit.includes(query);
+        const matchesFilter = currentFilter === 'all' || status === currentFilter;
+
+        if (matchesQuery && matchesFilter) {
+          row.style.display = 'table-row';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+  
