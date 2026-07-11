@@ -1,6 +1,6 @@
 {
   "name": "create-forge-react",
-  "version": "1.0.6",
+  "version": "1.0.0",
   "description": "A modern, highly customizable boilerplate generator for React that does not hide its configuration.",
   "main": "lib/index.js",
   "type": "module",
