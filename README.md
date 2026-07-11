@@ -1,8 +1,8 @@
-# React Forge 🛠️
+# Create Forge React 🛠️
 
 A modern, highly customizable boilerplate generator for React that **does not hide its configuration**. 
 
-Tired of `create-react-app` burying your Webpack configuration? React Forge gives you the power to choose your stack and exposes every config file directly in your project root.
+Tired of `create-react-app` burying your Webpack configuration? Create Forge React gives you the power to choose your stack and exposes every config file directly in your project root.
 
 ## Features
 
@@ -13,13 +13,23 @@ Tired of `create-react-app` burying your Webpack configuration? React Forge give
 
 ## Usage
 
-The easiest way to use React Forge is via `npx`, which ensures you are always using the latest version. Run the following command in your terminal where you want to create your new project:
+The recommended way to use Create Forge React is via standard NPM initializers (without prior installation):
 
 ```bash
-npx react-forge-builder
+npm create forge-react
+# or
+npm init forge-react
 ```
 
-You will be presented with interactive prompts:
+Alternatively, you can run it directly using `npx`:
+
+```bash
+npx create-forge-react
+```
+
+### Interactive Prompts
+
+You will be presented with the following options:
 
 1. **Project Name**: The directory that will be created.
 2. **Build Tool**: Vite or Webpack.
@@ -27,26 +37,12 @@ You will be presented with interactive prompts:
 4. **State Management**: None, Redux, or Zustand.
 5. **Styling**: None (SCSS is default) or Tailwind CSS.
 
-Once the generator finishes, navigate into your new project and start coding:
+Once the generator finishes, navigate into your new project, install dependencies, and start coding:
 
 ```bash
 cd your-project-name
 npm install
-npm run dev
-```
-
-## Global Installation (Optional)
-
-If you prefer to install the CLI globally on your machine, you can do so via npm:
-
-```bash
-npm install -g react-forge-builder
-```
-
-Then you can run the generator anywhere using:
-
-```bash
-react-forge-builder
+npm run dev # or npm start for Webpack
 ```
 
 ## License

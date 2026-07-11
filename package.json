@@ -1,11 +1,11 @@
 {
-  "name": "react-forge-builder",
+  "name": "create-forge-react",
   "version": "1.0.6",
   "description": "A modern, highly customizable boilerplate generator for React that does not hide its configuration.",
   "main": "lib/index.js",
   "type": "module",
   "bin": {
-    "react-forge-builder": "bin/cli.js"
+    "create-forge-react": "bin/cli.js"
   },
   "repository": {
     "type": "git",
