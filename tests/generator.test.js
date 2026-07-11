@@ -84,6 +84,12 @@ describe('generateProject Integration Tests', () => {
     expect(mainContent).toContain("import { Provider } from 'react-redux';");
     expect(mainContent).toContain('<Provider store={store}>');
 
+    // Verify App.jsx modification for Redux
+    const appContent = await fs.readFile(path.join(projectPath, 'src/App.jsx'), 'utf8');
+    expect(appContent).toContain("import { useSelector, useDispatch } from 'react-redux';");
+    expect(appContent).toContain("useSelector((state) => state.counter.value)");
+    expect(appContent).toContain("dispatch(increment())");
+
     // Verify Tailwind styling injection
     expect(await fs.pathExists(path.join(projectPath, 'tailwind.config.js'))).toBe(true);
     expect(await fs.pathExists(path.join(projectPath, 'postcss.config.js'))).toBe(true);
@@ -134,6 +140,12 @@ describe('generateProject Integration Tests', () => {
 
     // Verify Zustand state injection
     expect(await fs.pathExists(path.join(projectPath, 'src/store/store.ts'))).toBe(true);
+
+    // Verify App.tsx modification for Zustand
+    const appContent = await fs.readFile(path.join(projectPath, 'src/App.tsx'), 'utf8');
+    expect(appContent).toContain("import { useStore } from './store/store';");
+    expect(appContent).toContain("useStore()");
+    expect(appContent).toContain("increment()");
 
     // Verify Tailwind is NOT injected
     expect(await fs.pathExists(path.join(projectPath, 'tailwind.config.js'))).toBe(false);
